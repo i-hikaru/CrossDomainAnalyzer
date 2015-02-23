@@ -46,7 +46,7 @@ class CrossDomainAnalyzer(object):
             b = self.level()[:ind-N]
         else:
             b = self.level()[:ind-N] + self.level()[ind+N:]
-        return average(b)
+        return np.average(b)
     def fwhm(self):
         lvl = list(self.level())
         ind_max = lvl.index(max(lvl))
@@ -77,22 +77,25 @@ class CrossDomainAnalyzer(object):
         ind = lvl.index(max(lvl))
         return self.freq()[ind], max(lvl)
 
-def plot_csv(fname):
+def plot_csv(fname, save=False):
     cda = CrossDomainAnalyzer(fname)
     fig, ax = plt.subplots()
     ax.plot(cda.freq(), cda.level())
     ax.plot(cda.average()[:,0], cda.average()[:,1], c='red', lw=1.5)
-    xlim(min(cda.freq()), max(cda.freq()))
-    xlabel('Frequency [Hz]')
-    ylabel(cda.unit())
-    grid()
+    ax.set_xlim(min(cda.freq()), max(cda.freq()))
+    ax.set_ylim(min(cda.level())-3, max(cda.level())+3)
+    plt.xlabel('Frequency [Hz]')
+    plt.ylabel('Power [%s]' % cda.unit())
+    ax.grid()
+    if save:
+        plt.savefig('%s.png' % fname[:-4])
     print """Parameters:
     Center frequency : %e Hz
     Span             : %e Hz
     Reference        : %.2f dBm
     Attenuate        : %.1f dB
     Signal frequency : %e Hz
-    Signal Power     : %.2f dBm
+    Signal power     : %.2f dBm
     Baseline         : %.2f dBm
     FWHM             : %e Hz
     """ % (cda.center(), cda.span(), cda.ref(), cda.att(), cda.signal()[0], cda.signal()[1], cda.baseline(), cda.fwhm())
